@@ -1,6 +1,29 @@
 <script>
     import Tile from "../lib/tiles/Tile.svelte";
 
+    const PRESETS = [
+        { name: "Easy", size: 5, count: 5, rounds: 5 },
+        { name: "D9", size: 5, count: 6, rounds: 6 },
+        { name: "Hard", size: 6, count: 8, rounds: 7 },
+        { name: "Prospero", size: 6, count: 10, rounds: 7 },
+        { name: "Impossible", size: 8, count: 14, rounds: 8 },
+    ];
+
+    let selectedPreset = $state("");
+
+    function applyPreset(e) {
+        const idx = e.target.value;
+        if (idx === "") return;
+        const p = PRESETS[idx];
+        gridSize = p.size;
+        activeCount = p.count;
+        roundCount = p.rounds;
+    }
+
+    function onManualChange() {
+        selectedPreset = "";
+    }
+
     let tileRefs = $state([]);
     let gridSize = $state(5);
     let activeCount = $state(5);
@@ -11,17 +34,14 @@
 
     const totalTiles = $derived(gridSize * gridSize);
 
-    // Game state
     let activeTiles = $state(new Set());
     let clickable = $state(false);
     let running = $state(false);
     let round = $state(0);
-    let phase = $state("idle"); // idle | showing | clicking | failed | done
+    let phase = $state("idle");
 
-    // Used to bail out of the click-phase wait early on mistake
     let failResolve = null;
 
-    // Progress bar: 1 = full, 0 = empty
     let progress = $state(0);
     let progressColor = $state("#7c3aed");
     let progressRaf = null;
@@ -52,19 +72,16 @@
         for (let r = 0; r < roundCount; r++) {
             round = r + 1;
 
-            // Reset all tiles
             activeTiles = new Set();
             clickable = false;
             tileRefs.forEach((t) => t?.reset());
 
-            // Pick random active tiles
             const picked = new Set();
             while (picked.size < Math.min(activeCount, totalTiles)) {
                 picked.add(Math.floor(Math.random() * totalTiles));
             }
             activeTiles = picked;
 
-            // Show phase
             phase = "showing";
             startProgress(showDuration, "#7c3aed");
             await Promise.all(
@@ -72,7 +89,6 @@
             );
             stopProgress();
 
-            // Click phase — waits for either timeout or a wrong click
             phase = "clicking";
             clickable = true;
             startProgress(clickDuration, "#a855f7");
@@ -89,7 +105,6 @@
                 return;
             }
 
-            // Brief pause between rounds
             if (r < roundCount - 1) {
                 phase = "idle";
                 await wait(600);
@@ -107,7 +122,6 @@
         return new Promise((resolve) => {
             failResolve = resolve;
             setTimeout(() => {
-                // Time's up — fail if not all active tiles were clicked
                 resolve(correctClicks < activeTiles.size);
             }, ms);
         });
@@ -115,12 +129,10 @@
 
     function handleTileClick(i, wasActive) {
         if (!wasActive && failResolve) {
-            // Wrong tile — instant loss
             failResolve(true);
             failResolve = null;
         } else if (wasActive) {
             correctClicks++;
-            // All tiles clicked before time ran out — advance early
             if (correctClicks === activeTiles.size && failResolve) {
                 failResolve(false);
                 failResolve = null;
@@ -147,10 +159,27 @@
 
 <div class="controls">
     <label>
+        Preset
+        <select
+            bind:value={selectedPreset}
+            onchange={applyPreset}
+            disabled={running}
+        >
+            <option value="">— custom —</option>
+            {#each PRESETS as preset, i}
+                <option value={i}>{preset.name}</option>
+            {/each}
+        </select>
+    </label>
+
+    <div class="divider"></div>
+
+    <label>
         Grid size
         <input
             type="number"
             bind:value={gridSize}
+            oninput={onManualChange}
             min="2"
             max="10"
             disabled={running}
@@ -161,6 +190,7 @@
         <input
             type="number"
             bind:value={activeCount}
+            oninput={onManualChange}
             min="1"
             max={totalTiles}
             disabled={running}
@@ -171,6 +201,7 @@
         <input
             type="number"
             bind:value={roundCount}
+            oninput={onManualChange}
             min="1"
             max="20"
             disabled={running}
@@ -254,6 +285,13 @@
         margin: 2rem auto 1rem;
     }
 
+    .divider {
+        width: 1px;
+        height: 2rem;
+        background: #3a3a50;
+        align-self: center;
+    }
+
     label {
         display: flex;
         flex-direction: column;
@@ -264,7 +302,8 @@
         text-transform: uppercase;
     }
 
-    input {
+    input,
+    select {
         width: 5rem;
         padding: 0.4rem 0.6rem;
         border-radius: 6px;
@@ -276,12 +315,21 @@
         transition: border-color 150ms;
     }
 
-    input:focus {
+    select {
+        width: auto;
+        min-width: 8rem;
+        text-align: left;
+        cursor: pointer;
+    }
+
+    input:focus,
+    select:focus {
         outline: none;
         border-color: #7c3aed;
     }
 
-    input:disabled {
+    input:disabled,
+    select:disabled {
         opacity: 0.45;
         cursor: not-allowed;
     }
