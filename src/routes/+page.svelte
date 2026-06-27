@@ -6,7 +6,7 @@
     let activeCount = $state(5);
     let roundCount = $state(5);
     let showDuration = $state(1500);
-    let clickDuration = $state(3000);
+    let clickDuration = $state(2500);
     let tileColor = $state("#3f8fe9");
 
     const totalTiles = $derived(gridSize * gridSize);
@@ -100,17 +100,31 @@
         running = false;
     }
 
+    let correctClicks = 0;
+
     function raceFailure(ms) {
+        correctClicks = 0;
         return new Promise((resolve) => {
             failResolve = resolve;
-            setTimeout(() => resolve(false), ms);
+            setTimeout(() => {
+                // Time's up — fail if not all active tiles were clicked
+                resolve(correctClicks < activeTiles.size);
+            }, ms);
         });
     }
 
     function handleTileClick(i, wasActive) {
         if (!wasActive && failResolve) {
+            // Wrong tile — instant loss
             failResolve(true);
             failResolve = null;
+        } else if (wasActive) {
+            correctClicks++;
+            // All tiles clicked before time ran out — advance early
+            if (correctClicks === activeTiles.size && failResolve) {
+                failResolve(false);
+                failResolve = null;
+            }
         }
     }
 
