@@ -159,9 +159,10 @@
 
     const roundStatuses = $derived(
         Array.from({ length: roundCount }, (_, i) => {
-            if (phase === "failed" && i === round - 1) return "failed";
+            if (phase === "failed" && i === round - 2) return "failed";
             if (i < round - 1) return "done";
-            if (i === round - 1 && phase !== "idle") return "current";
+            if (i === round - 1 && phase !== "idle" && phase !== "failed")
+                return "current";
             return "upcoming";
         }),
     );
