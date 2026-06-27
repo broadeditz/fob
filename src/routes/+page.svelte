@@ -68,10 +68,9 @@
         if (running) return;
         running = true;
         phase = "idle";
+        round = 1;
 
         for (let r = 0; r < roundCount; r++) {
-            round = r + 1;
-
             activeTiles = new Set();
             clickable = false;
             tileRefs.forEach((t) => t?.reset());
@@ -95,6 +94,8 @@
             const failed = await raceFailure(clickDuration);
             stopProgress();
             clickable = false;
+
+            round++;
 
             if (failed) {
                 phase = "failed";
@@ -154,6 +155,15 @@
                 : phase === "done"
                   ? "✅"
                   : "",
+    );
+
+    const roundStatuses = $derived(
+        Array.from({ length: roundCount }, (_, i) => {
+            if (phase === "failed" && i === round - 1) return "failed";
+            if (i < round - 1) return "done";
+            if (i === round - 1 && phase !== "idle") return "current";
+            return "upcoming";
+        }),
     );
 </script>
 
@@ -263,6 +273,18 @@
             {clickable}
             onClick={(wasActive) => handleTileClick(i, wasActive)}
         />
+    {/each}
+</div>
+
+<div class="round-tracker" style="--tile-color: {tileColor};">
+    {#each roundStatuses as status}
+        <div
+            class="round-dot"
+            class:done={status === "done"}
+            class:current={status === "current"}
+            class:failed={status === "failed"}
+            style={status === "current" ? `background: {tileColor};` : ""}
+        ></div>
     {/each}
 </div>
 
@@ -421,5 +443,38 @@
         gap: 10px;
         width: min(90vw, 500px);
         margin: 0 auto;
+    }
+
+    .round-tracker {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        margin: 14px auto 4px;
+    }
+
+    .round-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        background: #2a2a3e;
+        border: 1px solid #3a3a50;
+        transition:
+            background 300ms,
+            border-color 300ms;
+    }
+
+    .round-dot.done {
+        background: #4ade80;
+        border-color: #4ade80;
+    }
+
+    .round-dot.failed {
+        background: #ef4444;
+        border-color: #ef4444;
+    }
+
+    .round-dot.current {
+        border-color: transparent;
+        background-color: var(--tile-color);
     }
 </style>
