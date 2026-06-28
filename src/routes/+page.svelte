@@ -67,7 +67,7 @@
     let roundCount = $state(5);
     let showDuration = $state(1500);
     let clickDuration = $state(2500);
-    let tileColor = $state("#3f8fe9");
+    let tileColor = $state("#6899b7");
 
     const totalTiles = $derived(gridSize * gridSize);
 

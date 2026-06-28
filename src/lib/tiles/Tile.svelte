@@ -12,7 +12,7 @@
      */
 
     let {
-        color = "#3f8fe9",
+        color = "#6899b7",
         active = false,
         clickable = false,
         onReveal = () => {},
@@ -99,7 +99,7 @@
         border: none;
         border-radius: 10px;
         cursor: default;
-        background: var(--tile-bg, #1e1e2e);
+        background: var(--tile-bg, #153040);
         box-shadow:
             0 2px 6px rgba(0, 0, 0, 0.35),
             inset 0 1px 0 rgba(255, 255, 255, 0.06);
@@ -119,7 +119,7 @@
         background: linear-gradient(
             135deg,
             rgba(255, 255, 255, 0.08) 0%,
-            transparent 60%
+            transparent 95%
         );
         pointer-events: none;
     }
