@@ -2,11 +2,46 @@
     import Tile from "../lib/tiles/Tile.svelte";
 
     const PRESETS = [
-        { name: "Easy", size: 5, count: 5, rounds: 5 },
-        { name: "D9", size: 5, count: 6, rounds: 6 },
-        { name: "Hard", size: 6, count: 8, rounds: 7 },
-        { name: "Prospero", size: 6, count: 10, rounds: 7 },
-        { name: "Impossible", size: 8, count: 14, rounds: 8 },
+        {
+            name: "Easy",
+            size: 5,
+            count: 5,
+            rounds: 5,
+            clickDuration: 2500,
+            showDuration: 1500,
+        },
+        {
+            name: "D9",
+            size: 5,
+            count: 6,
+            rounds: 6,
+            clickDuration: 2500,
+            showDuration: 1500,
+        },
+        {
+            name: "Hard",
+            size: 6,
+            count: 8,
+            rounds: 7,
+            clickDuration: 3000,
+            showDuration: 1500,
+        },
+        {
+            name: "Prospero",
+            size: 6,
+            count: 10,
+            rounds: 7,
+            clickDuration: 3500,
+            showDuration: 1500,
+        },
+        {
+            name: "Impossible",
+            size: 8,
+            count: 14,
+            rounds: 8,
+            clickDuration: 4000,
+            showDuration: 1500,
+        },
     ];
 
     let selectedPreset = $state("");
@@ -18,6 +53,8 @@
         gridSize = p.size;
         activeCount = p.count;
         roundCount = p.rounds;
+        showDuration = p.showDuration;
+        clickDuration = p.clickDuration;
     }
 
     function onManualChange() {
