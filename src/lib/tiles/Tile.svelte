@@ -58,6 +58,7 @@
 
     /** reveal() – permanently light up the tile (expose correct answer on failure) */
     export function reveal() {
+        correct = active === guessed ? (active ? true : null) : false;
         revealed = true;
     }
 
@@ -79,7 +80,7 @@
     class:revealed
     class:clickable={clickable && !guessed}
     class:correct={guessed && correct === true}
-    class:wrong={guessed && correct === false}
+    class:wrong={correct === false}
     aria-label="Memory tile, {state}"
     aria-pressed={guessed || undefined}
     disabled={!clickable || guessed}
